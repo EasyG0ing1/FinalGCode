@@ -121,7 +121,7 @@ Pressing the Add ZHop button brings up a window that lets you add any kind of zH
 
 DO NOT USE THIS FEATURE IF YOU HAD YOUR SLICER DO ZHOPPING
 
-The form is convenient to use with just a keyboard. You can use tab or enter to jump to the next field and if there is enough information set while the cursor is in `End Layer, then hitting enter will add those zHop settings to the set and you can see at the top of the form the sets that you have already added.
+The form is convenient to use with just a keyboard. You can use tab or enter to jump to the next field and if there is enough information set while the cursor is in `End Layer`, then hitting enter will add those zHop settings to the set and you can see at the top of the form the sets that you have already added.
 
 Pressing tab or enter from a field that does not have valid data in it will cause the cursor to remain in that field until you put something in it.
 
