@@ -1,19 +1,21 @@
 package com.simtechdata.finalgcode.settings;
 
 import com.simtechdata.finalgcode.enums.OS;
+import com.simtechdata.finalgcode.processing.ZSet;
+import com.simtechdata.finalgcode.processing.structure.Line;
 import javafx.scene.text.Font;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
-import javax.swing.*;
-import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.prefs.BackingStoreException;
+import java.util.Map;
 
 import static com.simtechdata.finalgcode.enums.OS.*;
 
@@ -23,13 +25,16 @@ public class AppSettings {
 	private static final Set     setter     = new Set();
 	private static final Clear   clear      = new Clear();
 	private static final String  OSystem    = System.getProperty("os.name").toLowerCase();
-	private static       Taskbar taskbar;
-	private static       JFrame  jFrame;
 	private static final Path    monacoPath = Paths.get(getAppFolder().toString(), "Monaco.ttf");
+	private static final Path    infoIconPath = Paths.get(getAppFolder().toString(), "InfoIcon.png");
 	private static       Font    fontMonaco;
 	private static       String  gcode      = "";
 	private static final String  ret        = System.getProperty("line.separator");
 	private static Path gcodePath;
+	private static       Path               gcodeOutPath;
+	private static final Map<Integer, Line> gcodeLineMap = new HashMap<>();
+	private static       LinkedList<String> gcodeList     = new LinkedList<>();
+	private static final LinkedList<Line>   gcodeLineList = new LinkedList<>();
 
 
 	public static void setGCode(Path gcodePath) {
@@ -37,15 +42,52 @@ public class AppSettings {
 		try {
 			gcode     = FileUtils.readFileToString(gcodePath.toFile(), Charset.defaultCharset());
 			formatGCode();
+			String baseFileName = FilenameUtils.getBaseName(gcodePath.toString());
+			String outFilename = baseFileName + "Modified." + FilenameUtils.getExtension(gcodePath.toString());
+			gcodeOutPath = Paths.get(gcodePath.toFile().getParent(),outFilename);
 		}
 		catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+		gcodeLineMap.clear();
+		gcodeList.clear();
+		gcodeLineList.clear();
 	}
 
 	public static void setGCode(String gcode) {
 		AppSettings.gcode = gcode;
 		formatGCode();
+		gcodeLineMap.clear();
+		gcodeList.clear();
+		gcodeLineList.clear();
+	}
+
+	public static Map<Integer, Line> getGcodeLineMap () {
+		checkLists();
+		return gcodeLineMap;
+	}
+
+	public static LinkedList<String> getGcodeList() {
+		checkLists();
+		return gcodeList;
+	}
+
+	private static void checkLists() {
+		if (gcodeList.isEmpty()) {
+			gcodeList = new LinkedList<>(Arrays.stream(gcode.split("\\n")).toList());
+		}
+		if(gcodeLineMap.isEmpty()) {
+			int index = 0;
+			for(String line : gcodeList) {
+				gcodeLineMap.put(index, ZSet.getLine(line));
+				index++;
+			}
+		}
+		if(gcodeLineList.isEmpty()) {
+			for(String line : gcodeList) {
+				gcodeLineList.addLast(ZSet.getLine(line));
+			}
+		}
 	}
 
 	private static void formatGCode() {
@@ -66,20 +108,12 @@ public class AppSettings {
 		return gcodePath == null;
 	}
 
-	public static String getFilename() {
-		return gcodePath == null ? "" : gcodePath.toFile().getName();
+	public static String getOutFilename() {
+		return gcodeOutPath == null ? "" :  FilenameUtils.getName(gcodeOutPath.toString());
 	}
 
-	public static String getBaseFilename() {
-		return FilenameUtils.getBaseName(gcodePath != null ?  gcodePath.getFileName().toString() : "");
-	}
-
-	public static String getRootFolder() {
-		return gcodePath != null ?  gcodePath.toFile().getParentFile().toPath().toString() : "";
-	}
-
-	public static LinkedList<String> getGCodeList() {
-		return new LinkedList<>(Arrays.stream(gcode.split(ret)).toList());
+	public static File getOutFile() {
+		return gcodeOutPath == null ? null : gcodeOutPath.toFile();
 	}
 
 	public static Font getFontMonaco(double size) {
@@ -101,27 +135,14 @@ public class AppSettings {
 		return clear;
 	}
 
-	public static void setJFrame(JFrame jFrame) {
-		AppSettings.jFrame = jFrame;
-	}
-
-	public static void setTaskbar(Taskbar taskbar) {
-		AppSettings.taskbar = taskbar;
-	}
-
 	public static OS getOS() {
 		if (OSystem.toLowerCase().contains("win")) {return WINDOWS;}
 		else if (OSystem.toLowerCase().contains("mac")) {return MAC;}
 		else {return LINUX;}
 	}
 
-	public static void clearAllSettings() {
-		try {
-			LABEL.prefs.clear();
-		}
-		catch (BackingStoreException e) {
-			throw new RuntimeException(e);
-		}
+	public static String getInfoIcon() {
+		return "file:" + infoIconPath;
 	}
 
 	public static Path getAppFolder() {

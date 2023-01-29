@@ -7,8 +7,6 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,7 +15,7 @@ public class GCode {
 
 
 	public static void loadGCode(Filament filament) {
-		haveZHops            = ZHopping.haveZHops();
+		haveZHops            = ZHopping.getInstance().haveZHops();
 		hotEndPrintTemp      = AppSettings.get().hotEndPrintTemp(filament);
 		bedHoldTemp          = AppSettings.get().bedPrintTemp(filament);
 		hotEndHoldTemp       = AppSettings.get().hotEndHoldTemp(filament);
@@ -34,7 +32,7 @@ public class GCode {
 	}
 
 	public static void startProcessing(UserChoices userChoices) {
-		haveZHops   = ZHopping.haveZHops();
+		haveZHops   = ZHopping.getInstance().haveZHops();
 		homeHotEnd  = userChoices.homeHotEnd();
 		loadBedMesh = userChoices.loadBedMesh();
 		addEndGCode = userChoices.addEndGCode();
@@ -110,7 +108,6 @@ public class GCode {
 	public static void processGCode() {
 		try {
 			if (holdHotEnd || homeHotEnd) {buildStartGCode();}
-			Path               finalPath = getFinalPath();
 			LinkedList<String> gcode     = getGCodeLinkedList();
 			time = new Time();
 			if (fadeBedTemp) {
@@ -129,7 +126,8 @@ public class GCode {
 			String finalGCode = getFinalGCode(gcode);
 			if (AppSettings.getOS().equals(OS.WINDOWS)) {finalGCode = cleanup(finalGCode);}
 			AppSettings.setGCode(finalGCode);
-			FileUtils.writeStringToFile(finalPath.toFile(), AppSettings.getGCode(), Charset.defaultCharset());
+			assert AppSettings.getOutFile() != null;
+			FileUtils.writeStringToFile(AppSettings.getOutFile(), AppSettings.getGCode(), Charset.defaultCharset());
 			System.out.println("Success");
 			System.exit(0);
 		}
@@ -190,7 +188,9 @@ public class GCode {
 			}
 			FGC.append(line).append(ret);
 		}
-		return haveZHops ? ZHopping.addZHops(FGC.toString()) : FGC.toString();
+		String newGCode = FGC.toString();
+		AppSettings.setGCode(newGCode);
+		return haveZHops ? ZHopping.getInstance().addZHops() : newGCode;
 	}
 
 	private static String cleanup(String gcode) {
@@ -199,8 +199,6 @@ public class GCode {
 
 	private static void buildStartGCode() {
 		startGCode.append(";*********** BEGIN CUSTOM START GCODE *********").append(ret);
-		String command = "";
-		int    len     = 0;
 		if (holdHotEnd) {
 			startGCode.append(format("M104 S", hotEndHoldTemp, "; Start heating the hot end to pre temp"));
 			startGCode.append(format("M140 S", bedHoldTemp, "; Start heating the bed to pre temp"));
@@ -276,14 +274,7 @@ public class GCode {
 	}
 
 	private static LinkedList<String> getGCodeLinkedList() {
-		return AppSettings.getGCodeList();
-	}
-
-	private static Path getFinalPath() {
-		String fileBase    = AppSettings.getBaseFilename();
-		String rootFolder  = AppSettings.getRootFolder();
-		String newFileName = fileBase + "Modified.gcode";
-		return Paths.get(rootFolder, newFileName);
+		return AppSettings.getGcodeList();
 	}
 
 	private static int getFirstLayerForCoolDown() {

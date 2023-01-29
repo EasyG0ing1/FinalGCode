@@ -3,6 +3,7 @@ package com.simtechdata.finalgcode.guis;
 import com.simtechdata.easyfxcontrols.containers.CHBox;
 import com.simtechdata.easyfxcontrols.containers.CVBox;
 import com.simtechdata.easyfxcontrols.controls.Button;
+import com.simtechdata.easyfxcontrols.controls.CCheckBox;
 import com.simtechdata.easyfxcontrols.controls.CLabel;
 import com.simtechdata.easyfxcontrols.controls.CTextField;
 import com.simtechdata.finalgcode.processing.GCode;
@@ -11,13 +12,12 @@ import com.simtechdata.finalgcode.settings.AppSettings;
 import com.simtechdata.sceneonefx.SceneOne;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
-
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class ZHop {
 
@@ -34,90 +34,133 @@ public class ZHop {
 					}
 				})
 				.onCloseEvent(e -> close())
-				.showAndWait();
+				.show();
+		tfZHopDistance.requestFocus();
 	}
 
 	private       String sceneId = SceneOne.randomSceneId();
 	private final double width   = 530;
-	private final double base    = 210;
+	private final double base    = 275;
 	private       double height;
 	private       CVBox  vbox;
 
-	private       Text       txtCurrentZHops;
-	private       CLabel     lblZHopDistance;
-	private       CLabel     lblStartLayer;
-	private       CLabel     lblEndLayer;
-	private       CTextField tfZHopDistance;
-	private       CTextField tfStartLayer;
-	private       CTextField tfEndLayer;
-	private       Button     btnAdd;
-	private       Button     btnCancel;
-	private       Button     btnClear;
-	private       boolean    addedDistance = false;
-	private       boolean    addedStart    = false;
-	private       boolean    addedEnd      = false;
+	private Text       txtCurrentZHops;
+	private CLabel     lblDiagonal;
+	private CCheckBox  cbDiagonal;
+	private CLabel     lblTraditional;
+	private CCheckBox  cbTraditional;
+	private CLabel     lblAlternate;
+	private CCheckBox  cbAlternate;
+	private CLabel     lblMinDistance;
+	private CTextField tfMinDistance;
+	private CLabel     lblZHopDistance;
+	private CLabel     lblStartLayer;
+	private CLabel     lblEndLayer;
+	private CTextField tfZHopDistance;
+	private CTextField tfStartLayer;
+	private CTextField tfEndLayer;
+	private Button     btnAdd;
+	private Button     btnCancel;
+	private Button     btnClear;
+	private Image      icon;
+	private ImageView  ivInfo;
+	private boolean    addedDistance = false;
+	private boolean    addedStart    = false;
 
 	private void makeControls() {
-		String  currentZHops = ZHopping.getZHops();
+		String  currentZHops = ZHopping.getInstance().getZHopsString();
 		boolean haveZHops    = !currentZHops.isEmpty();
 		int     lines        = currentZHops.split("\\n").length;
-		height          = haveZHops ? base + (lines * 15) : 165;
+		height          = haveZHops ? base + (lines * 15) : base;
 		txtCurrentZHops = new Text(currentZHops);
+		lblDiagonal     = new CLabel.Builder("Diagonal ZHop").width(85).build();
+		cbDiagonal      = new CCheckBox.Builder().toolTip("Click on the question mark for\nmore information about diagonal ZHop").build();
+		lblTraditional  = new CLabel.Builder("Traditional").visibleBinding(cbDiagonal.selectedProperty()).width(85).build();
+		cbTraditional   = new CCheckBox.Builder().visibleBinding(cbDiagonal.selectedProperty()).selected(true).build();
+		lblAlternate    = new CLabel.Builder("Alternate").width(85).visibleBinding(cbDiagonal.selectedProperty()).build();
+		cbAlternate     = new CCheckBox.Builder().visibleBinding(cbDiagonal.selectedProperty()).selected(false).build();
+		lblMinDistance  = new CLabel.Builder("Minimum Distance").width(140).visibleBinding(cbDiagonal.selectedProperty()).build();
+		tfMinDistance   = new CTextField.Builder("2").width(140).visibleBinding(cbDiagonal.selectedProperty()).numbersWithDecimals().build();
+		icon            = new Image(AppSettings.getInfoIcon());
+		ivInfo          = new ImageView(icon);
+		ivInfo.setFitWidth(35);
+		ivInfo.setPreserveRatio(true);
+		ivInfo.setOnMouseClicked(e->new DiagonalInfo());
+
+
 		lblZHopDistance = new CLabel.Builder("ZHop Distance").width(150).alignment(Pos.BASELINE_CENTER).build();
 		lblStartLayer   = new CLabel.Builder("Start Layer (first layer is always 0)").width(150).wordWrap(true).alignment(Pos.BASELINE_CENTER).build();
-		lblEndLayer     = new CLabel.Builder("End Layer (Last layer number is "+GCode.getLastLayerNumber()+")").width(150).wordWrap(true).alignment(Pos.BASELINE_CENTER).build();
-		tfZHopDistance  = new CTextField.Builder().width(150).build();
-		tfStartLayer    = new CTextField.Builder().width(150).build();
-		tfEndLayer      = new CTextField.Builder().width(150).build();
+		lblEndLayer     = new CLabel.Builder("End Layer (Last layer number is " + GCode.getLastLayerNumber() + ")").width(150).wordWrap(true).alignment(Pos.BASELINE_CENTER).build();
+		tfZHopDistance  = new CTextField.Builder().width(150).numbersWithDecimals().build();
+		tfStartLayer    = new CTextField.Builder().width(150).numbersWithoutDecimals().build();
+		tfEndLayer      = new CTextField.Builder().width(150).numbersWithoutDecimals().build();
 		btnAdd          = new Button.Builder().text("Add").width(55).build();
 		btnCancel       = new Button.Builder().text("Close").width(85).build();
 		btnClear        = new Button.Builder().text("Clear All ZHops").width(115).build();
+
+		CVBox vbDiagInfo    = new CVBox.Builder(5, ivInfo).alignment(Pos.BOTTOM_LEFT).padding(new Insets(0,15,0,0)).build();
+		CVBox vbDiagonal    = new CVBox.Builder(5, lblDiagonal, cbDiagonal).alignment(Pos.CENTER).build();
+		CVBox vbTraditional = new CVBox.Builder(5, lblTraditional, cbTraditional).alignment(Pos.CENTER).build();
+		CVBox vbAlternate   = new CVBox.Builder(5, lblAlternate, cbAlternate).alignment(Pos.CENTER).build();
+		CVBox vbMinDistance = new CVBox.Builder(5, lblMinDistance, tfMinDistance).alignment(Pos.CENTER).build();
+
+		CHBox boxDiagonal   = new CHBox.Builder(vbDiagInfo, vbDiagonal, vbTraditional, vbAlternate, vbMinDistance).alignment(Pos.CENTER).build();
 		CHBox boxCurrent    = new CHBox.Builder(txtCurrentZHops).alignment(Pos.CENTER).build();
 		CHBox boxLabels     = new CHBox.Builder(15, lblZHopDistance, lblStartLayer, lblEndLayer).build();
 		CHBox boxTextFields = new CHBox.Builder(15, tfZHopDistance, tfStartLayer, tfEndLayer).build();
 		CHBox boxButtons    = new CHBox.Builder(15, btnAdd, btnCancel, btnClear).alignment(Pos.CENTER).build();
-		if (haveZHops) {vbox = new CVBox.Builder(10, boxCurrent, boxLabels, boxTextFields, boxButtons).padding(20).alignment(Pos.CENTER).build();}
-		else {vbox = new CVBox.Builder(10, boxLabels, boxTextFields, boxButtons).padding(new Insets(0, 0, 0, 15)).alignment(Pos.CENTER).build();}
-	}
 
+		if (haveZHops) {vbox = new CVBox.Builder(10, boxCurrent, boxDiagonal, boxLabels, boxTextFields, boxButtons).padding(20).alignment(Pos.CENTER).build();}
+		else {vbox = new CVBox.Builder(10, boxDiagonal, boxLabels, boxTextFields, boxButtons).padding(new Insets(0, 0, 0, 15)).alignment(Pos.CENTER).build();}
+	}
 
 	private void setControlActions() {
 		Font monaco = AppSettings.getFontMonaco(11.5);
-		tfEndLayer.focusedProperty().addListener((ob, ov, nv) -> {
-			if (nv) {addedEnd = true;}
+		tfZHopDistance.textProperty().addListener((ob, ov, nv) -> addedDistance = nv.matches("[0-9]+") ||
+																			  nv.matches("[0-9]+\\.[0-9]+") ||
+																			  nv.matches("\\.[0-9]+"));
+
+		tfStartLayer.textProperty().addListener((ob, ov, nv) -> addedStart = nv.matches("[0-9]+"));
+		tfEndLayer.textProperty().addListener((ob, ov, nv) -> {});
+		tfMinDistance.setOnKeyPressed(event -> {
+			boolean tab   = event.getCode().equals(KeyCode.TAB);
+			boolean enter = event.getCode().equals(KeyCode.ENTER);
+			boolean esc = event.getCode().equals(KeyCode.ESCAPE);
+			if (tab || enter) {
+				tfZHopDistance.requestFocus();
+			}
+			if (esc)
+				close();
 		});
-		tfZHopDistance.textProperty().addListener((observable, oldValue, newValue) -> {
-			tfZHopDistance.setText(tfZHopDistance.getText().replaceAll("[^0-9.]", ""));
-			String t = tfZHopDistance.getText();
-			addedDistance = t.matches("[0-9]+") ||
-							t.matches("[0-9]+\\.[0-9]+") ||
-							t.matches("\\.[0-9]+");
-		});
-		tfStartLayer.textProperty().addListener((observable, oldValue, newValue) -> {
-			tfStartLayer.setText(tfStartLayer.getText().replaceAll("[^0-9]", ""));
-			addedStart = tfStartLayer.getText().matches("[0-9]+");
-		});
-		tfEndLayer.textProperty().addListener((observable, oldValue, newValue) -> tfEndLayer.setText(tfEndLayer.getText().replaceAll("[^0-9]", "")));
 		tfZHopDistance.setOnKeyPressed(event -> {
 			boolean tab   = event.getCode().equals(KeyCode.TAB);
 			boolean enter = event.getCode().equals(KeyCode.ENTER);
+			boolean esc = event.getCode().equals(KeyCode.ESCAPE);
 			if (tab || enter) {
 				tfStartLayer.requestFocus();
 			}
+			if (esc)
+				close();
 		});
 		tfStartLayer.setOnKeyPressed(event -> {
 			boolean tab   = event.getCode().equals(KeyCode.TAB);
 			boolean enter = event.getCode().equals(KeyCode.ENTER);
+			boolean esc = event.getCode().equals(KeyCode.ESCAPE);
 			if (tab || enter) {
 				tfEndLayer.requestFocus();
 			}
+			if (esc)
+				close();
 		});
 		tfEndLayer.setOnKeyPressed(event -> {
 			boolean tab   = event.getCode().equals(KeyCode.TAB);
 			boolean enter = event.getCode().equals(KeyCode.ENTER);
+			boolean esc = event.getCode().equals(KeyCode.ESCAPE);
 			if (tab || enter) {
 				processEnd(tab);
 			}
+			if (esc)
+				close();
 		});
 		btnAdd.setOnKeyPressed(event -> {
 			boolean tab = event.getCode().equals(KeyCode.TAB);
@@ -137,24 +180,10 @@ public class ZHop {
 		txtCurrentZHops.setFont(monaco);
 		txtCurrentZHops.setLineSpacing(.65);
 		txtCurrentZHops.setTextAlignment(TextAlignment.JUSTIFY);
+		cbAlternate.selectedProperty().addListener((ob, ov, nv) -> cbTraditional.setSelected(ov));
+		cbTraditional.selectedProperty().addListener((ob, ov, nv) -> cbAlternate.setSelected(ov));
 		addedDistance = false;
 		addedStart    = false;
-		addedEnd      = false;
-	}
-
-	private void processDistance(boolean tab) {
-		if (!addedDistance) {tfZHopDistance.requestFocus();}
-		else if (!addedStart) {tfStartLayer.requestFocus();}
-		else if (!addedEnd) {tfEndLayer.requestFocus();}
-		else if (tab) {tfStartLayer.requestFocus();}
-		else {addZHop();}
-	}
-
-	private void processStart(boolean tab) {
-		if (!addedDistance) {tfZHopDistance.requestFocus();}
-		else if (!addedStart) {tfStartLayer.requestFocus();}
-		else if (!addedEnd || tab) {tfEndLayer.requestFocus();}
-		else {addZHop();}
 	}
 
 	private void processEnd(boolean tab) {
@@ -186,7 +215,6 @@ public class ZHop {
 			SceneOne.showMessage(300, 125, "zHop distance must be greater than 0");
 			tfZHopDistance.requestFocus();
 			addedStart = false;
-			addedEnd   = false;
 			return;
 		}
 
@@ -199,7 +227,6 @@ public class ZHop {
 			tfEndLayer.clear();
 			tfStartLayer.requestFocus();
 			addedStart = false;
-			addedEnd   = false;
 			return;
 		}
 
@@ -207,11 +234,18 @@ public class ZHop {
 			SceneOne.showMessage(500, 140, "There are only " + lastLayerNumber + " layers in this print. Your end layer value of " + end + " is higher than the number of layers in this print. Please chose a different ending layer number or leave that field blank to automatically set end to last layer.", true, Pos.CENTER_LEFT);
 			tfEndLayer.clear();
 			tfEndLayer.requestFocus();
-			addedEnd = false;
 			return;
 		}
 
-		boolean added = ZHopping.insertZHop(height, start, end);
+		boolean added;
+		boolean useDiagonal = cbDiagonal.isSelected();
+		boolean alternate = cbAlternate.isSelected();
+		double minDistance = tfMinDistance.getText().isEmpty() ? 0 : Double.parseDouble(tfMinDistance.getText());
+
+		if(useDiagonal)
+			added = ZHopping.getInstance().insertZHop(height, start, end, true, alternate, minDistance);
+		else
+			added = ZHopping.getInstance().insertZHop(height, start, end);
 
 		if (!added) {
 			SceneOne.showMessage(450, 140, "Either your start layer (" + start + ") or end layer (" + end + ") or any layer in between already exists in a set you have previously added. Please chose different layers for a new set", true, Pos.CENTER_LEFT);
@@ -219,7 +253,6 @@ public class ZHop {
 			tfEndLayer.clear();
 			tfStartLayer.requestFocus();
 			addedStart = false;
-			addedEnd   = false;
 			return;
 		}
 		resetForm();
@@ -240,11 +273,12 @@ public class ZHop {
 					}
 				})
 				.onCloseEvent(e -> close())
-				.showAndWait();
+				.show();
+		tfZHopDistance.requestFocus();
 	}
 
 	private void clearZHops() {
-		ZHopping.clearZHops();
+		ZHopping.getInstance().clearZHops();
 		resetForm();
 	}
 

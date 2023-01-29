@@ -120,13 +120,17 @@ Pressing the Add ZHop button brings up a window that lets you add any kind of zH
 
 DO NOT USE THIS FEATURE IF YOU HAD YOUR SLICER DO ZHOPPING
 
-The form is convenient to use with just a keyboard. You can use tab or enter to jump to the next field and if there is enough information set, then hitting enter will add those zHop settings to the set and you can see at the top of the form the sets that you have already added.
+The form is convenient to use with just a keyboard. You can use tab or enter to jump to the next field and if there is enough information set While the cursor is in EndLayer, then hitting enter will add those zHop settings to the set and you can see at the top of the form the sets that you have already added.
 
 Pressing tab or enter from a field that does not have valid data in it will cause the cursor to remain in that field until you put something in it.
 
 Leaving the End Layer field empty will cause it to use the last layer number in the print as the final layer for those zHop settings.
 
 Pressing escape closes out the form but the zHop settings that are shown at the top of the form are retained for final processing. If you press escape before committing the currently entered values, those values will NOT be added to the set. So either press enter when you've entered in the values you want or press the Add button before pressing escape (or the Close button which does the same thing as pressing escape).
+
+### Diagonal ZHop
+
+Click on the question mark for information about what diagonal ZHop is. Also, there is a [video from Michael](https://www.youtube.com/watch?v=OAXi_apvgl4) on the TeachingTech channel on Youtube that also goes over what it's all about.
 
 ### How it works
 
@@ -154,4 +158,8 @@ If you have any desired changes that you would like to see in this program, open
 
 I hope you get as much use out of this program as I have.
 
-Thank you
+Thank you,
+
+Mike Sims
+
+sims.mike@gmail.com

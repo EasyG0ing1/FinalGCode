@@ -1,7 +1,5 @@
 package com.simtechdata.finalgcode.processing;
 
-import java.nio.file.Path;
-
 public record UserChoices(boolean homeHotEnd,
 						  boolean addEndGCode,
 

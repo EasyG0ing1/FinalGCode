@@ -3,12 +3,9 @@ package com.simtechdata.finalgcode.processing;
 import com.simtechdata.finalgcode.settings.AppSettings;
 import org.apache.commons.io.FileUtils;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -69,10 +66,6 @@ public class Time {
 
 	StringBuilder log = new StringBuilder("G,X,Y,Z,E,F,Line,Accumulation\n");
 
-	private void checkForLayer() {
-
-	}
-
 	private double getHeight(String line) {
 		String  regex  = "(HEIGHT:)([0-9.]+)";
 		Pattern p      = Pattern.compile(regex);
@@ -119,9 +112,8 @@ public class Time {
 	}
 
 	private LinkedList<String> getG10Commands() {
-		BufferedReader     reader;
 		LinkedList<String> G10CommandList = new LinkedList<>();
-		LinkedList<String> lineList = AppSettings.getGCodeList();
+		LinkedList<String> lineList = AppSettings.getGcodeList();
 		int index = 0;
 		boolean nextIsLayer = false;
 		for(String gline : lineList) {
@@ -139,35 +131,6 @@ public class Time {
 			index++;
 		}
 		return G10CommandList;
-	}
-
-	private GLine getGLine(String gLine) {
-		String  regX = "(X)([0-9.-]+)";
-		String  regY = "(Y)([0-9.-]+)";
-		String  regZ = "(Z)([0-9.-]+)";
-		String  regE = "(E)([0-9.-]+)";
-		String  regF = "(F)([0-9.-]+)";
-		Pattern pX   = Pattern.compile(regX);
-		Pattern pY   = Pattern.compile(regY);
-		Pattern pZ   = Pattern.compile(regZ);
-		Pattern pE   = Pattern.compile(regE);
-		Pattern pF   = Pattern.compile(regF);
-		Matcher mX   = pX.matcher(gLine);
-		Matcher mY   = pY.matcher(gLine);
-		Matcher mZ   = pZ.matcher(gLine);
-		Matcher mE   = pE.matcher(gLine);
-		Matcher mF   = pF.matcher(gLine);
-		double  X    = 0;
-		double  Y    = 0;
-		double  Z    = 0;
-		double  E    = 0;
-		double  F    = 0;
-		if (mX.find()) {X = Double.parseDouble(mX.group(2));}
-		if (mY.find()) {Y = Double.parseDouble(mY.group(2));}
-		if (mZ.find()) {Z = Double.parseDouble(mZ.group(2));}
-		if (mE.find()) {E = Double.parseDouble(mE.group(2));}
-		if (mF.find()) {F = Double.parseDouble(mF.group(2));}
-		return new GLine(X, Y, Z, E, F);
 	}
 
 	private Line getLine(String line) {
@@ -190,7 +153,6 @@ public class Time {
 		}
 		return new Line(g, x, y, z, e, f);
 	}
-
 
 	private static class Line {
 
@@ -234,25 +196,6 @@ public class Time {
 
 		public boolean onlyZ() {
 			return Zv > 0 && Xv == 0 && Yv == 0;
-		}
-	}
-
-
-	private record GLine(double X, double Y, double Z, double E, double F) {
-		public String toString() {
-			return "X" + X + " Y" + Y + " Z" + Z + " E" + E + " F" + F;
-		}
-
-		public boolean EOnly() {
-			return E > 0 && X == 0 && Y == 0 && Z == 0;
-		}
-
-		public boolean XorY() {
-			return X > 0 || Y > 0;
-		}
-
-		public boolean onlyZ() {
-			return Z > 0 && X == 0 && Y == 0;
 		}
 	}
 

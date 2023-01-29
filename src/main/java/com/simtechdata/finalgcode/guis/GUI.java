@@ -21,7 +21,6 @@ import javafx.stage.FileChooser;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -31,13 +30,14 @@ import static com.simtechdata.finalgcode.enums.Filament.PLA;
 public class GUI {
 
 	public GUI(Path gcodePath) {
-		Path newGcodePath = null;
+		Path newGcodePath;
 		if (gcodePath == null) {
 			newGcodePath = loadGCodeFile();
 		}
 		else {
 			newGcodePath = gcodePath;
 		}
+		assert newGcodePath != null;
 		AppSettings.setGCode(newGcodePath);
 		time = new Time();
 		if (System.getenv("SLIC3R_FILAMENT_TYPE") != null) {
@@ -451,17 +451,7 @@ public class GUI {
 	}
 
 	private void updateSummary() {
-		String filename = "";
-		if (AppSettings.gcodePathNull()) {
-			if (System.getenv("SLIC3R_PP_OUTPUT_NAME") != null) {
-				Path rootFile = Paths.get(System.getenv("SLIC3R_PP_OUTPUT_NAME"));
-				filename = rootFile.getFileName().toString();
-
-			}
-			else {
-				filename = AppSettings.getFilename();
-			}
-		}
+		String filename = AppSettings.getOutFilename();
 		lblMode.setText(AppSettings.gcodePathNull() ? "No GCode Processing (Test Mode)" : "Live - GCode will be processed (" + filename + ")");
 		lblMode.setStyle(AppSettings.gcodePathNull() ? "-fx-text-fill:RED" : "-fx-text-fill:GREEN");
 		int printTime = time.getTotalPrintTime();

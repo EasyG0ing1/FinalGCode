@@ -16,5 +16,6 @@ module com.simtechdata {
  	exports com.simtechdata.finalgcode.enums;
  	exports com.simtechdata.finalgcode.guis;
  	exports com.simtechdata.finalgcode.processing;
+ 	exports com.simtechdata.finalgcode.processing.structure;
  	exports com.simtechdata.finalgcode.settings;
 }
