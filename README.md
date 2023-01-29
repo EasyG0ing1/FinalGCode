@@ -9,6 +9,7 @@ Final GCode is a program that I wrote for doing some gcode modifications that I 
   - Multiple single layers
   - A range of layers 
   - Multiple ranges of layers
+- Diagonal ZHopping
 - Gradual bed cooling
   - Set a time frame for the print to start gradually cooling the bed so that the print is removable as soon as it's done.
 - Interim hot end heating
