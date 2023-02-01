@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.simtechdata</groupId>
     <artifactId>FinalGCode</artifactId>
-    <version>1.2</version>
+    <version>1.2.1</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>19</maven.compiler.source>

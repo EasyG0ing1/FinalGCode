@@ -18,40 +18,73 @@ import javafx.scene.control.Slider;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import static com.simtechdata.finalgcode.enums.Filament.ABS;
 import static com.simtechdata.finalgcode.enums.Filament.PLA;
+import static com.simtechdata.finalgcode.guis.GUI.HostType.*;
 
 public class GUI {
 
+	enum HostType {
+		LOCAL,
+		UPLOAD
+	}
+
 	public GUI(Path gcodePath) {
-		Path newGcodePath;
-		if (gcodePath == null) {
-			newGcodePath = loadGCodeFile();
-		}
-		else {
-			newGcodePath = gcodePath;
-		}
-		assert newGcodePath != null;
-		AppSettings.setGCode(newGcodePath);
+		processEnvironment(gcodePath);
 		time = new Time();
-		if (System.getenv("SLIC3R_FILAMENT_TYPE") != null) {
-			String filament = System.getenv("SLIC3R_FILAMENT_TYPE");
-			this.filament      = filament.equals("ABS") ? ABS : PLA;
-			lockFilamentChoice = filament.equals("ABS") || filament.matches("PLA");
-			GCode.loadGCode(this.filament);
-		}
 		makeControls();
 		updateSummary();
 		if (!cbHoldHotEnd.isSelected()) {height -= 50;}
 		if (!cbLayerBedTemp.isSelected()) {height -= 50;}
 		if (!cbFadeBedTemp.isSelected()) {height -= 50;}
 		SceneOne.set(sceneId, vbox, width, height).onCloseEvent(e -> cancel()).centered().show();
+	}
+
+	private void processEnvironment(Path gcodePath) {
+		Path newGcodePath;
+		Path outGcodePath;
+		HostType hostType = LOCAL;
+		if (gcodePath == null) {
+			newGcodePath = loadGCodeFile();
+		}
+		else {
+			newGcodePath = gcodePath;
+		}
+		if (System.getenv("SLIC3R_PP_HOST") != null) {
+			String type = System.getenv("SLIC3R_PP_HOST");
+			if (!type.equalsIgnoreCase("File"))
+				hostType = UPLOAD;
+		}
+		if(hostType.equals(UPLOAD)) {
+			assert newGcodePath != null;
+			String modifiedFilePath = new File(newGcodePath.toString()).getAbsolutePath();
+			outGcodePath = Paths.get(modifiedFilePath);
+		}
+		else {
+			String uploadFileName = System.getenv("SLIC3R_PP_OUTPUT_NAME");
+			String outPath = new File(uploadFileName).getParent();
+			String baseName = FilenameUtils.getBaseName(uploadFileName);
+			String extension = FilenameUtils.getExtension(uploadFileName);
+			String newFileName = baseName + "Modified." + extension;
+			outGcodePath = Paths.get(outPath,newFileName);
+		}
+		if (System.getenv("SLIC3R_FILAMENT_TYPE") != null) {
+			String filament = System.getenv("SLIC3R_FILAMENT_TYPE");
+			this.filament      = filament.equals("ABS") ? ABS : PLA;
+			lockFilamentChoice = filament.equals("ABS") || filament.matches("PLA");
+			GCode.loadGCode(this.filament);
+		}
+		assert newGcodePath != null;
+		AppSettings.setGCode(newGcodePath);
+		AppSettings.setOutPath(outGcodePath);
 	}
 
 	private final Time       time;

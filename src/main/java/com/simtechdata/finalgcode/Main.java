@@ -14,10 +14,15 @@ import org.apache.commons.io.FileUtils;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.Map;
 
 import static com.simtechdata.finalgcode.enums.OS.MAC;
 
@@ -104,6 +109,29 @@ public class Main extends Application {
 
 	}
 
+	private void getEnvironmentVariables() {
+		Map<String, String> map = System.getenv();
+		StringBuilder sb = new StringBuilder("Name,Value\n");
+		int x = 1;
+		for(String arg: args) {
+			sb.append("COMMAND_LINE_ARGUMENT_").append(x).append(",").append(arg).append("\n");
+			x++;
+		}
+		LinkedList<String> indexes = new LinkedList<>(map.keySet());
+		indexes.sort(Comparator.comparing(String::toString));
+		for(String name : indexes) {
+			String value = map.get(name);
+			sb.append(name).append(",").append(value).append("\n");
+		}
+		try{
+			File file = new File(System.getProperty("user.home"),"PrusaSlicerEnvironmentVariables.csv");
+			FileUtils.writeStringToFile(file, sb.toString(), Charset.defaultCharset());
+		}
+		catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	@Override public void start(Stage primaryStage) {
 		boolean logging = false;
 		if(args[0] != null) {
@@ -111,7 +139,7 @@ public class Main extends Application {
 				gcodePath = Paths.get(args[0]);
 				if (!gcodePath.toFile().exists()) {
 					SceneOne.showMessage(500, 125, "GCode File does not exist:\n" + args[0], true, Pos.CENTER_LEFT);
-					System.exit(0);
+					System.exit(1);
 				}
 			}
 		}
@@ -119,6 +147,7 @@ public class Main extends Application {
 			if(arg.equalsIgnoreCase("log"))
 				logging = true;
 		}
+
 		AppSettings.set().logging(logging);
 		copyResources();
 		setTaskbarDockIcon();

@@ -15,24 +15,24 @@ import java.util.regex.Pattern;
 public class Time {
 
 	public Time() {
-			logging = AppSettings.get().logging();
-			analyze();
+		logging = AppSettings.get().logging();
+		analyze();
 	}
 
-	private double currentX     = 0;
-	private double currentY     = 0;
-	private double currentZ     = 0;
-	private double lastFeedRate = 60;
-	private double totalHeight  = 0.0;
-	private double totalPrintTime = 0;
-	private boolean logging;
+	private       double  currentX       = 0;
+	private       double  currentY       = 0;
+	private       double  currentZ       = 0;
+	private       double  lastFeedRate   = 60;
+	private       double  totalHeight    = 0.0;
+	private       double  totalPrintTime = 0;
+	private final boolean logging;
 
 	private final Map<Integer, Double> layerHeightMap = new HashMap<>();
 	private final Map<Integer, Double> layerTimeMap   = new HashMap<>();
 
 	private void analyze() {
 		LinkedList<String> G1Lines      = getG10Commands();
-		int                layer = 0;
+		int                layer        = 0;
 		LinkedList<Double> lineTimeList = new LinkedList<>();
 		for (String gLine : G1Lines) {
 			if (gLine.startsWith(";LAYER:")) {
@@ -56,7 +56,7 @@ public class Time {
 				lineTimeList.addLast(addTime(getLine(gLine)));
 			}
 		}
-		if(logging) {
+		if (logging) {
 			File logFile = new File(("/Users/michael/Java/PrintTimeLog.csv"));
 			try {
 				FileUtils.writeStringToFile(logFile, log.toString(), Charset.defaultCharset());
@@ -105,31 +105,29 @@ public class Time {
 			currentY  = newY == 0 ? currentY : newY;
 		}
 		else if (gline.onlyZ()) {
-			double deltaZ   = Math.abs(newZ - currentZ);
+			double deltaZ = Math.abs(newZ - currentZ);
 			printTime = deltaZ / feedRate;
 			currentZ  = newZ;
 		}
 		totalPrintTime += printTime;
-		if(logging)
-			log.append(gline.getLine()).append(",").append(printTime).append(",").append(totalPrintTime).append("\n");
+		if (logging) {log.append(gline.getLine()).append(",").append(printTime).append(",").append(totalPrintTime).append("\n");}
 		return printTime;
 	}
 
 	private LinkedList<String> getG10Commands() {
 		LinkedList<String> G10CommandList = new LinkedList<>();
-		LinkedList<String> lineList = AppSettings.getGcodeList();
-		int index = 0;
-		boolean nextIsLayer = false;
-		for(String gline : lineList) {
-			if(nextIsLayer){
+		LinkedList<String> lineList       = AppSettings.getGcodeList();
+		int                index          = 0;
+		boolean            nextIsLayer    = false;
+		for (String gline : lineList) {
+			if (nextIsLayer) {
 				nextIsLayer = false;
 				continue;
 			}
-			if(gline.contains("HEIGHT:")) {
+			if (gline.contains("HEIGHT:")) {
 				String nextLine = lineList.get(index + 1);
 				nextIsLayer = nextLine.startsWith(";LAYER:");
-				if(nextIsLayer)
-					G10CommandList.addLast(nextLine);
+				if (nextIsLayer) {G10CommandList.addLast(nextLine);}
 			}
 			G10CommandList.addLast(gline);
 			index++;
@@ -161,17 +159,17 @@ public class Time {
 	private static class Line {
 
 		public Line(String g, String x, String y, String z, String e, String f) {
-			G = g;
-			X = x;
-			Y = y;
-			Z = z;
-			E = e;
-			F = f;
-			Xv = X.isEmpty() ? 0.0 : Double.parseDouble(X.replaceAll("[^0-9.]+",""));
-			Yv = Y.isEmpty() ? 0.0 : Double.parseDouble(Y.replaceAll("[^0-9.]+",""));
-			Zv = Z.isEmpty() ? 0.0 : Double.parseDouble(Z.replaceAll("[^0-9.]+",""));
-			Ev = E.isEmpty() ? 0.0 : Double.parseDouble(E.replaceAll("[^0-9.]+",""));
-			Fv = F.isEmpty() ? 0.0 : Double.parseDouble(F.replaceAll("[^0-9.]+",""));
+			G  = g;
+			X  = x;
+			Y  = y;
+			Z  = z;
+			E  = e;
+			F  = f;
+			Xv = X.isEmpty() ? 0.0 : Double.parseDouble(X.replaceAll("[^0-9.]+", ""));
+			Yv = Y.isEmpty() ? 0.0 : Double.parseDouble(Y.replaceAll("[^0-9.]+", ""));
+			Zv = Z.isEmpty() ? 0.0 : Double.parseDouble(Z.replaceAll("[^0-9.]+", ""));
+			Ev = E.isEmpty() ? 0.0 : Double.parseDouble(E.replaceAll("[^0-9.]+", ""));
+			Fv = F.isEmpty() ? 0.0 : Double.parseDouble(F.replaceAll("[^0-9.]+", ""));
 		}
 
 		public final String G;
