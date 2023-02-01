@@ -105,13 +105,21 @@ public class Main extends Application {
 	}
 
 	@Override public void start(Stage primaryStage) {
-		for (String arg : args) {
-			gcodePath = Paths.get(arg);
-			if (!gcodePath.toFile().exists()) {
-				SceneOne.showMessage(500, 125, "GCode File does not exist:\n" + arg, true, Pos.CENTER_LEFT);
-				System.exit(0);
+		boolean logging = false;
+		if(args[0] != null) {
+			if(!args[0].equalsIgnoreCase("log")) {
+				gcodePath = Paths.get(args[0]);
+				if (!gcodePath.toFile().exists()) {
+					SceneOne.showMessage(500, 125, "GCode File does not exist:\n" + args[0], true, Pos.CENTER_LEFT);
+					System.exit(0);
+				}
 			}
 		}
+		for (String arg : args) {
+			if(arg.equalsIgnoreCase("log"))
+				logging = true;
+		}
+		AppSettings.set().logging(logging);
 		copyResources();
 		setTaskbarDockIcon();
 		new GUI(gcodePath);

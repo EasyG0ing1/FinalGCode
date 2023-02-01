@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 public class Time {
 
 	public Time() {
+			logging = AppSettings.get().logging();
 			analyze();
 	}
 
@@ -23,8 +24,8 @@ public class Time {
 	private double currentZ     = 0;
 	private double lastFeedRate = 60;
 	private double totalHeight  = 0.0;
-
 	private double totalPrintTime = 0;
+	private boolean logging;
 
 	private final Map<Integer, Double> layerHeightMap = new HashMap<>();
 	private final Map<Integer, Double> layerTimeMap   = new HashMap<>();
@@ -55,12 +56,14 @@ public class Time {
 				lineTimeList.addLast(addTime(getLine(gLine)));
 			}
 		}
-		File logFile = new File(("/Users/michael/Java/PrintTimeLog.csv"));
-		try {
-			FileUtils.writeStringToFile(logFile, log.toString(), Charset.defaultCharset());
-		}
-		catch (IOException e) {
-			throw new RuntimeException(e);
+		if(logging) {
+			File logFile = new File(("/Users/michael/Java/PrintTimeLog.csv"));
+			try {
+				FileUtils.writeStringToFile(logFile, log.toString(), Charset.defaultCharset());
+			}
+			catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 		}
 	}
 
@@ -107,7 +110,8 @@ public class Time {
 			currentZ  = newZ;
 		}
 		totalPrintTime += printTime;
-		log.append(gline.getLine()).append(",").append(printTime).append(",").append(totalPrintTime).append("\n");
+		if(logging)
+			log.append(gline.getLine()).append(",").append(printTime).append(",").append(totalPrintTime).append("\n");
 		return printTime;
 	}
 

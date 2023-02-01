@@ -30,7 +30,8 @@ public enum LABEL {
 	TIME_FOR_BED_TEMP_FADE_PLA,
 	TIME_FOR_BED_TEMP_FADE_ABS,
 	HOME_HOT_END,
-	LAST_GCODE_FOLDER;
+	LAST_GCODE_FOLDER,
+	LOGGING;
 
 	public String Name(LABEL this) {
 		return switch (this) {
@@ -58,6 +59,7 @@ public enum LABEL {
 			case TIME_FOR_BED_TEMP_FADE_ABS -> "Time_For_Bed_Temp_Fade_Abs";
 			case HOME_HOT_END -> "Home_Hot_End";
 			case LAST_GCODE_FOLDER -> "Last_Gcode_Folder";
+			case LOGGING -> "Logging";
 		};
 	}
 

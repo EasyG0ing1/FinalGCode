@@ -97,4 +97,8 @@ public class Get {
 		return new File(prefs.get(LABEL.LAST_GCODE_FOLDER.Name(), System.getProperty("user.home")));
 	}
 
+	public boolean logging() {
+		return prefs.getBoolean(LABEL.LOGGING.Name(), false);
+	}
+
 }

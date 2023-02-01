@@ -103,6 +103,10 @@ public class Clear {
 		prefs.remove(LABEL.LAST_GCODE_FOLDER.Name());
 	}
 
+	public void logging() {
+		prefs.remove(LABEL.LOGGING.Name());
+	}
+
 	public void ALL() {
 		try {
 			prefs.clear();

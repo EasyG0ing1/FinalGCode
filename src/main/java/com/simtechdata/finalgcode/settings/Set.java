@@ -124,5 +124,10 @@ public class Set {
 		prefs.put(LABEL.LAST_GCODE_FOLDER.Name(), value);
 	}
 
+	public void logging(boolean value) {
+		AppSettings.clear().logging();
+		prefs.putBoolean(LABEL.LOGGING.Name(), value);
+	}
+
 
 }
