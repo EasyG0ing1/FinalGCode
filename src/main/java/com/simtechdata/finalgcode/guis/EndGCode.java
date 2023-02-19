@@ -2,7 +2,7 @@ package com.simtechdata.finalgcode.guis;
 
 import com.simtechdata.easyfxcontrols.containers.CHBox;
 import com.simtechdata.easyfxcontrols.containers.CVBox;
-import com.simtechdata.easyfxcontrols.controls.Button;
+import com.simtechdata.easyfxcontrols.controls.CButton;
 import com.simtechdata.easyfxcontrols.controls.CTextArea;
 import com.simtechdata.finalgcode.settings.AppSettings;
 import com.simtechdata.sceneonefx.SceneOne;
@@ -27,8 +27,8 @@ public class EndGCode {
 		ta.textProperty().bindBidirectional(gcode);
 		ta.setFont(monaco);
 		gcode.setValue(AppSettings.get().endGCode());
-		Button btnSave    = new Button.Builder("Save").width(65).onAction(e -> save()).build();
-		Button btnCancel  = new Button.Builder("Cancel").width(65).onAction(e -> close()).build();
+		CButton btnSave    = new CButton.Builder("Save").width(65).onAction(e -> save()).build();
+		CButton btnCancel  = new CButton.Builder("Cancel").width(65).onAction(e -> close()).build();
 		CHBox  boxButtons = new CHBox.Builder(20, btnSave, btnCancel).alignment(Pos.CENTER).build();
 		CVBox  vbox       = new CVBox.Builder(20, ta, boxButtons).height(height).padding(20).build();
 		SceneOne.set(sceneId, vbox, width, height).newStage().centered().alwaysOnTop().title(title).showAndWait();

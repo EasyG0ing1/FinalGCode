@@ -85,7 +85,7 @@ public class GCode {
 
 	private static int getLayerNumber(String line) {
 		if (!line.startsWith(";LAYER:")) {return -1;}
-		String  regex = "(;LAYER:)([0-9]+)";
+		String  regex = "(;LAYER[: ]+)([0-9]+)";
 		Pattern p     = Pattern.compile(regex);
 		Matcher m     = p.matcher(line);
 		if (m.find()) {

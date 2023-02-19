@@ -2,7 +2,7 @@ package com.simtechdata.finalgcode.guis;
 
 import com.simtechdata.easyfxcontrols.containers.CHBox;
 import com.simtechdata.easyfxcontrols.containers.CVBox;
-import com.simtechdata.easyfxcontrols.controls.Button;
+import com.simtechdata.easyfxcontrols.controls.CButton;
 import com.simtechdata.easyfxcontrols.controls.CCheckBox;
 import com.simtechdata.easyfxcontrols.controls.CLabel;
 import com.simtechdata.easyfxcontrols.controls.CTextField;
@@ -59,9 +59,9 @@ public class ZHop {
 	private CTextField tfZHopDistance;
 	private CTextField tfStartLayer;
 	private CTextField tfEndLayer;
-	private Button     btnAdd;
-	private Button     btnCancel;
-	private Button     btnClear;
+	private CButton     btnAdd;
+	private CButton     btnCancel;
+	private CButton     btnClear;
 	private Image      icon;
 	private ImageView  ivInfo;
 	private boolean    addedDistance = false;
@@ -94,9 +94,9 @@ public class ZHop {
 		tfZHopDistance  = new CTextField.Builder().width(150).numbersWithDecimals().build();
 		tfStartLayer    = new CTextField.Builder().width(150).numbersWithoutDecimals().build();
 		tfEndLayer      = new CTextField.Builder().width(150).numbersWithoutDecimals().build();
-		btnAdd          = new Button.Builder().text("Add").width(55).build();
-		btnCancel       = new Button.Builder().text("Close").width(85).build();
-		btnClear        = new Button.Builder().text("Clear All ZHops").width(115).build();
+		btnAdd          = new CButton.Builder().text("Add").width(55).build();
+		btnCancel       = new CButton.Builder().text("Close").width(85).build();
+		btnClear        = new CButton.Builder().text("Clear All ZHops").width(115).build();
 
 		CVBox vbDiagInfo    = new CVBox.Builder(5, ivInfo).alignment(Pos.BOTTOM_LEFT).padding(new Insets(0,15,0,0)).build();
 		CVBox vbDiagonal    = new CVBox.Builder(5, lblDiagonal, cbDiagonal).alignment(Pos.CENTER).build();

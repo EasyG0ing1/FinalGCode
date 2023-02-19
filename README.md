@@ -33,7 +33,7 @@ For some reason, the way that time is calculated from gcode doesn't seem to work
 
 ## Using Final GCode
 
-The best way to use the program is to go to the [Releases link](https://github.com/EasyG0ing1/FinalGCode/releases) on the right and download either the Windows or Mac version as you need. Then you simply run the program and if you didn't pass in the gcode file as a command line argument, it will start out with an open file dialoge that you can use to get your gcode file.
+The best way to use the program is to go to the [Releases link](https://github.com/EasyG0ing1/FinalGCode/releases/latest) on the right and download either the Windows or Mac version as you need. Then you simply run the program and if you didn't pass in the gcode file as a command line argument, it will start out with an open file dialoge that you can use to get your gcode file.
 
 All of the Java libraries are self contained within the compiled program so no need to install Java.
 

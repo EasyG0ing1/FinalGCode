@@ -146,7 +146,7 @@ public class ZHopping {
 	}
 
 	private int getLayerNumber(String line) {
-		String  regex = "(;LAYER:)([0-9]+)";
+		String  regex = "(;LAYER[: ]+)([0-9]+)";
 		Pattern p     = Pattern.compile(regex);
 		Matcher m     = p.matcher(line);
 		if (m.find()) {

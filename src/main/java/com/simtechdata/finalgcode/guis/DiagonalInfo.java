@@ -1,7 +1,7 @@
 package com.simtechdata.finalgcode.guis;
 
 import com.simtechdata.easyfxcontrols.containers.CVBox;
-import com.simtechdata.easyfxcontrols.controls.Button;
+import com.simtechdata.easyfxcontrols.controls.CButton;
 import com.simtechdata.finalgcode.settings.AppSettings;
 import com.simtechdata.sceneonefx.SceneOne;
 import javafx.geometry.Pos;
@@ -16,7 +16,7 @@ public class DiagonalInfo {
 
 	private final String sceneId = SceneOne.getRandomSceneId();
 	private final Text   txtInfo = new Text(getInfo());
-	private final Button btnOK = new Button.Builder("OK").onAction(e -> SceneOne.close(sceneId)).width(55).build();
+	private final CButton btnOK = new CButton.Builder("OK").onAction(e -> SceneOne.close(sceneId)).width(55).build();
 	private final CVBox  vbox  = new CVBox.Builder(txtInfo, btnOK).alignment(Pos.CENTER).build();
 
 	private void setControls() {

@@ -48,36 +48,42 @@ public class GUI {
 		SceneOne.set(sceneId, vbox, width, height).onCloseEvent(e -> cancel()).centered().show();
 	}
 
+	private Path outGcodePath;
+	private Path newGcodePath;
+	private String uploadFileName;
 	private void processEnvironment(Path gcodePath) {
-		Path newGcodePath;
-		Path outGcodePath;
+		boolean fromSlicer = System.getenv("SLIC3R_PP_HOST") != null;
 		HostType hostType = LOCAL;
+		String filament = "";
 		if (gcodePath == null) {
 			newGcodePath = loadGCodeFile();
 		}
 		else {
 			newGcodePath = gcodePath;
 		}
-		if (System.getenv("SLIC3R_PP_HOST") != null) {
+		if (fromSlicer) {
 			String type = System.getenv("SLIC3R_PP_HOST");
 			if (!type.equalsIgnoreCase("File"))
 				hostType = UPLOAD;
+			uploadFileName = System.getenv("SLIC3R_PP_OUTPUT_NAME");
+			filament = System.getenv("SLIC3R_FILAMENT_TYPE");
+
+		}
+		else {
+			uploadFileName = gcodePath.toFile().getParent();
 		}
 		if(hostType.equals(UPLOAD)) {
-			assert newGcodePath != null;
 			String modifiedFilePath = new File(newGcodePath.toString()).getAbsolutePath();
 			outGcodePath = Paths.get(modifiedFilePath);
 		}
 		else {
-			String uploadFileName = System.getenv("SLIC3R_PP_OUTPUT_NAME");
 			String outPath = new File(uploadFileName).getParent();
 			String baseName = FilenameUtils.getBaseName(uploadFileName);
 			String extension = FilenameUtils.getExtension(uploadFileName);
 			String newFileName = baseName + "Modified." + extension;
 			outGcodePath = Paths.get(outPath,newFileName);
 		}
-		if (System.getenv("SLIC3R_FILAMENT_TYPE") != null) {
-			String filament = System.getenv("SLIC3R_FILAMENT_TYPE");
+		if (!filament.isEmpty()) {
 			this.filament      = filament.equals("ABS") ? ABS : PLA;
 			lockFilamentChoice = filament.equals("ABS") || filament.matches("PLA");
 			GCode.loadGCode(this.filament);
@@ -139,7 +145,7 @@ public class GUI {
 	private CHBox getEndGCode() {
 		CLabel lblAddEndGCode = new CLabel.Builder("Add Ending GCode").build();
 		cbAddEndGCode = new CCheckBox.Builder().selected(AppSettings.get().addEndGCode()).build();
-		Button btnAddEndCode = new Button.Builder().text("GCode").width(65).visible(cbAddEndGCode.isSelected()).build();
+		CButton btnAddEndCode = new CButton.Builder().text("GCode").width(65).visible(cbAddEndGCode.isSelected()).build();
 		CHBox  boxCheckEnd   = new CHBox.Builder(15, lblAddEndGCode, cbAddEndGCode, btnAddEndCode).padding(10, 0, 0, 0).build();
 		cbAddEndGCode.selectedProperty().addListener((observable, oldValue, newValue) -> {
 			btnAddEndCode.setVisible(newValue);
@@ -330,12 +336,12 @@ public class GUI {
 		lblMode    = new CLabel.Builder().width(width * .8).build();
 		CLabel               lblFilament = new CLabel.Builder("Filament").build();
 		CChoiceBox<Filament> cbFilament  = new CChoiceBox.Builder<Filament>().width(65).item(Filament.ABS).item(PLA).build();
-		Button               btnZHop     = new Button.Builder().text("Add ZHop").width(90).build();
+		CButton               btnZHop     = new CButton.Builder().text("Add ZHop").width(90).build();
 
 		CLabel    lblHomeHotEnd = new CLabel.Builder("Home Hot End Before Print").build();
 		CCheckBox cbHomeHotEnd  = new CCheckBox.Builder().build();
-		Button    btnProcess    = new Button.Builder("Process GCode").disabled(AppSettings.gcodePathNull()).width(125).build();
-		Button    btnCancel     = new Button.Builder("Cancel").onAction(e -> cancel()).width(60).build();
+		CButton    btnProcess    = new CButton.Builder("Process GCode").disabled(AppSettings.gcodePathNull()).width(125).build();
+		CButton    btnCancel     = new CButton.Builder("Cancel").onAction(e -> cancel()).width(60).build();
 		lblTotalLayers   = new CLabel.Builder("Layers:").size(115, 15).alignment(Pos.CENTER_LEFT).font(Font.font("Monaco", 10)).build();
 		lblTotalHeight   = new CLabel.Builder("Height:").size(115, 15).alignment(Pos.CENTER_LEFT).font(Font.font("Monaco", 10)).build();
 		lblCurrentLayer  = new CLabel.Builder("Layer:").size(95, 15).alignment(Pos.CENTER_LEFT).font(Font.font("Monaco", 10)).build();
