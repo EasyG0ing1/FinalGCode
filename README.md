@@ -37,7 +37,7 @@ The best way to use the program is to go to the [Releases link](https://github.c
 
 All of the Java libraries are self contained within the compiled program so no need to install Java.
 
-Your gcode MUST have layer markers in it that look like this
+Your gcode ***MUST*** have layer markers in it that look like this
 ```gcode
 ;LAYER:12
 ```
