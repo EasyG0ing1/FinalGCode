@@ -54,7 +54,7 @@ In order to use this program as the post processing software in PrusaSlicer, the
 
 If you're using Windows, skip ahead a little to Prusa For Windows.
 
-## Prusa for MacOS
+## Prusa / Super Slicer for MacOS
 After installing the program, you will need to create a small bash shell script that will have two lines in it. Here is an example that should help you figure out what your script needs to look like:
 
 ```Bash
@@ -72,7 +72,7 @@ Then within Prusa, you need to go into `Print Settings` / `Output Options` `Post
 /Users/username/PrusaPostProcessing.sh
 ```
 ---
-## Prusa For Windows
+## Prusa / Super Slicer For Windows
 To set up the program to automatically receive any gcode from Prusa in Windows, you will first need to know what the path is to the .exe. This is normally `C:\Program Files\FinalGCode\FinalGCode.exe`
 
 Open PrusaSlicer and go into `Print Settings` / `Output Options` `Post processing scripts` and put in the full path to the .exe file surrounded by quotes (quotes are necessary if there is a space character in the path).
