@@ -148,6 +148,11 @@ It will ammend the word `Modified` to the end of the gcode filename before the `
 If you're using Prusa to upload the gcode directly to Octo Print or Klipper etc., the uploaded gcode will be the code that was modified by this program.
 
 ---
+### Windows Users
+You will see a DOS style window pop up that looks like this:
+![img](./img/win.png)
+This is normal and the warning that it shows can be ignored. This is a Java thing and is related to how I compile the program to work in Windows. The compiler tools that I use don't currently support Java module code so thats what the warning is all about. 
+---
 ### Disclaimer
 I make no warranties or guarantees about this software other than it does what has been described. Gcode can be VERY diffrent from one slicer to the next, and it can even be VERY different with different configurations within the same slicer. That being said, there is only one feature of this code that goes through your gcode and makes changes throughout and that is the zHop feature. Other than that, this program only makes changes to the start and the end of your gcode. There SHOULD BE no reason what so ever be concerned with the changes this software makes in your gcode.  
 

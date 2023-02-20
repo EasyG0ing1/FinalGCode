@@ -36,9 +36,9 @@ public class Time {
 		LinkedList<Double> lineTimeList = new LinkedList<>();
 		for (String gLine : G1Lines) {
 			if (gLine.startsWith(";LAYER:")) {
-				String num = gLine.replaceAll("(;LAYER[: ]+)(\\d+)(.{0,})","");
-				layer = Integer.parseInt(num);
-				if (!num.equals("0")) {
+				String num = gLine.replaceAll("(;LAYER[: ]+)([0-9]+)([a-zA-Z0-9 ,:._]+)","$2");
+				layer = Integer.parseInt(num.replaceAll("[^0-9]+",""));
+				if (layer != 0) {
 					double totalTime = 0;
 					for (double time : lineTimeList) {
 						totalTime += time;
