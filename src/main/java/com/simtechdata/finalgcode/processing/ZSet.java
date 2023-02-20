@@ -282,7 +282,7 @@ public class ZSet {
 				cumNum    = cumNum + x;
 				lastIndex = x;
 			}
-			int digits = Integer.parseInt(cumNum);
+			int digits = Integer.parseInt(cumNum.replaceAll("[^0-9]+",""));
 			midDigit = findMiddle(digits);
 			double  midValue = layerZ + zHop;
 			double  delta    = zHop / moveCount;

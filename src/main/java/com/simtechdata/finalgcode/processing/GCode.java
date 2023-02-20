@@ -75,11 +75,11 @@ public class GCode {
 	private static int     finalFadeTemp;
 	private static int     fadeTime;
 
-	private static boolean addStartGCode         = false;
-	private static int     fadeStartTemp         = 0;
-	private static int     fadeLayerStep         = 0;
-	private static int     firstLayerForCoolDown = 0;
-	private static int     lastLayerNumber       = 0;
+	private static final boolean addStartGCode         = holdHotEnd || homeHotEnd;
+	private static       int     fadeStartTemp         = 0;
+	private static       int     fadeLayerStep         = 0;
+	private static       int     firstLayerForCoolDown = 0;
+	private static       int     lastLayerNumber       = 0;
 
 	private static final StringBuilder startGCode = new StringBuilder();
 
@@ -107,10 +107,14 @@ public class GCode {
 
 	public static void processGCode() {
 		try {
-			if (holdHotEnd || homeHotEnd) {buildStartGCode();}
-			LinkedList<String> gcode     = getGCodeLinkedList();
-			time = new Time();
+			if (addStartGCode) {
+				Tracking.setProcess("Building start gcode");
+				buildStartGCode();
+			}
+			LinkedList<String> gcode = getGCodeLinkedList();
+			time = Time.getInstance();
 			if (fadeBedTemp) {
+				Tracking.setProcess("Building Bed Temp Fade");
 				double totalPrintMinutes = time.getTotalPrintMinutes();
 				if (fadeTime > totalPrintMinutes) {
 					fadeTime = (int) totalPrintMinutes;
@@ -216,7 +220,6 @@ public class GCode {
 			startGCode.append(format("M190 S", bedHoldTemp, "; Wait for bed to reach final temp"));
 		}
 		startGCode.append(";***********  END CUSTOM START GCODE  *********").append(ret);
-		addStartGCode = true;
 	}
 
 	private static String format(String command, double value, String comment) {
@@ -230,8 +233,8 @@ public class GCode {
 		int finalBedTemp = 100;
 		for (String line : gcode) {
 			if (line.startsWith("M140") || line.startsWith("M190")) {
-				String temp = line.replaceAll("(M\\d+|M\\d+\\s+)(S)(\\d+)(.+|)", "$3");
-				bedTemp = Integer.parseInt(temp);
+				String temp = line.replaceAll("(M\\d+|M\\d+\\s+)(S)([0-9]+)(.+|)", "$3");
+				bedTemp = Integer.parseInt(temp.replaceAll("[^0-9]+", ""));
 				if (bedTemp > 20) {
 					finalBedTemp = Math.min(bedTemp, finalBedTemp);
 				}

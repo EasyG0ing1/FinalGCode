@@ -141,9 +141,9 @@ Implementing this in code is lot more rule intensive, but that is the net result
 
 ## Processing GCode
 
-When you click on the Process GCode button, it will save the modified gcode in the same folder that the source gcode file is in. Or if you're using this program with Prusa, it will get the path that you chose when you hit the Export GCode button. 
+When you click on the Process GCode button, it will save the final gcode in the same folder that the source gcode file is in. Or if you're using this program with Prusa, it will get the path that you chose when you hit the Export GCode button. 
 
-It will ammend the word `Modified` to the end of the gcode filename before the `.gcode` extension.
+It will ammend the word `_Final` to the end of the gcode filename before the `.gcode` extension.
 
 If you're using Prusa to upload the gcode directly to Octo Print or Klipper etc., the uploaded gcode will be the code that was modified by this program.
 

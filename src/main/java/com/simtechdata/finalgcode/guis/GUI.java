@@ -28,7 +28,8 @@ import java.util.TimerTask;
 
 import static com.simtechdata.finalgcode.enums.Filament.ABS;
 import static com.simtechdata.finalgcode.enums.Filament.PLA;
-import static com.simtechdata.finalgcode.guis.GUI.HostType.*;
+import static com.simtechdata.finalgcode.guis.GUI.HostType.LOCAL;
+import static com.simtechdata.finalgcode.guis.GUI.HostType.UPLOAD;
 
 public class GUI {
 
@@ -38,23 +39,33 @@ public class GUI {
 	}
 
 	public GUI(Path gcodePath) {
-		processEnvironment(gcodePath);
-		time = new Time();
 		makeControls();
-		updateSummary();
+		processEnvironment(gcodePath);
 		if (!cbHoldHotEnd.isSelected()) {height -= 50;}
 		if (!cbLayerBedTemp.isSelected()) {height -= 50;}
 		if (!cbFadeBedTemp.isSelected()) {height -= 50;}
-		SceneOne.set(sceneId, vbox, width, height).onCloseEvent(e -> cancel()).centered().show();
+		lblProcessing.setText("Analyzing GCode");
+		new Thread(() -> Platform.runLater(() -> SceneOne.set(sceneId, vbox, width, height).onCloseEvent(e -> cancel()).centered().show())).start();
+		disableControls();
+		new Thread(() -> {
+			time = Time.getInstance();
+			Platform.runLater(() -> {
+				setSlider();
+				updateSummary();
+				enableControls();
+				lblProcessing.setText("");
+			});
+		}).start();
 	}
 
-	private Path outGcodePath;
-	private Path newGcodePath;
+	private Path   outGcodePath;
+	private Path   newGcodePath;
 	private String uploadFileName;
+
 	private void processEnvironment(Path gcodePath) {
-		boolean fromSlicer = System.getenv("SLIC3R_PP_HOST") != null;
-		HostType hostType = LOCAL;
-		String filament = "";
+		boolean  fromSlicer = System.getenv("SLIC3R_PP_HOST") != null;
+		HostType hostType   = LOCAL;
+		String   filament   = "";
 		if (gcodePath == null) {
 			newGcodePath = loadGCodeFile();
 		}
@@ -63,25 +74,25 @@ public class GUI {
 		}
 		if (fromSlicer) {
 			String type = System.getenv("SLIC3R_PP_HOST");
-			if (!type.equalsIgnoreCase("File"))
-				hostType = UPLOAD;
+			if (!type.equalsIgnoreCase("File")) {hostType = UPLOAD;}
 			uploadFileName = System.getenv("SLIC3R_PP_OUTPUT_NAME");
-			filament = System.getenv("SLIC3R_FILAMENT_TYPE");
+			filament       = System.getenv("SLIC3R_FILAMENT_TYPE");
 
 		}
 		else {
-			uploadFileName = gcodePath.toFile().getParent();
+			if(gcodePath != null)
+				uploadFileName = gcodePath.toFile().getParent();
 		}
-		if(hostType.equals(UPLOAD)) {
+		if (hostType.equals(UPLOAD)) {
 			String modifiedFilePath = new File(newGcodePath.toString()).getAbsolutePath();
 			outGcodePath = Paths.get(modifiedFilePath);
 		}
 		else {
-			String outPath = new File(uploadFileName).getParent();
-			String baseName = FilenameUtils.getBaseName(uploadFileName);
-			String extension = FilenameUtils.getExtension(uploadFileName);
-			String newFileName = baseName + "Modified." + extension;
-			outGcodePath = Paths.get(outPath,newFileName);
+			String outPath     = new File(uploadFileName).getParent();
+			String baseName    = FilenameUtils.getBaseName(uploadFileName);
+			String extension   = FilenameUtils.getExtension(uploadFileName);
+			String newFileName = baseName + "_Final." + extension;
+			outGcodePath = Paths.get(outPath, newFileName);
 		}
 		if (!filament.isEmpty()) {
 			this.filament      = filament.equals("ABS") ? ABS : PLA;
@@ -93,43 +104,100 @@ public class GUI {
 		AppSettings.setOutPath(outGcodePath);
 	}
 
-	private final Time       time;
-	private final String     sceneId            = SceneOne.getRandom(25);
-	private final double     width              = 600;
-	private       double     height             = 640;
-	private       CVBox      vbox;
-	private       Filament   filament           = PLA;
-	private       boolean    lockFilamentChoice = false;
-	private       CLabel     lblSummary;
-	private       CLabel     lblLayerTime;
-	private       CLabel     lblLayerTimeLeft;
-	private       CLabel     lblMode;
-	private       CTextField tfHotEndHoldTemp;
-	private       CTextField tfHotEndPrintTemp;
-	private       CTextField tfBedHoldTemp;
-	private       CTextField tfBedPrintTemp;
-	private       CTextField tfBedTempAtLayer;
-	private       CTextField tfLayerForNewBedTemp;
-	private       CTextField tfFinalBedTempForFade;
-	private       CTextField tfTimeForBedTempFade;
-	private       CVBox      vboxHoldHotEnd;
-	private       CVBox      vboxBedTempAtLayer;
-	private       CVBox      vboxFadeBedTemp;
-	private       CCheckBox  cbHoldHotEnd;
-	private       CCheckBox  cbLayerBedTemp;
-	private       CCheckBox  cbFadeBedTemp;
-	private       CHBox      boxSlider;
-	private       CVBox      sliderBox;
-	private       CVBox      boxButtons;
-	private       CLabel     lblProcessing;
-	private       CCheckBox  cbAddEndGCode;
-	private       CCheckBox  cbLoadBedMesh;
-	private       CLabel     lblTotalLayers;
-	private       CLabel     lblTotalHeight;
-	private       CLabel     lblCurrentLayer;
-	private       CLabel     lblLayersLeft;
-	private       CLabel     lblLayerHeight;
-	private       CLabel     lblHeightLeft;
+	private       Time                 time;
+	private final String               sceneId            = SceneOne.getRandom(25);
+	private final double               width              = 600;
+	private       double               height             = 640;
+	private       CVBox                vbox;
+	private       Filament             filament           = PLA;
+	private       boolean              lockFilamentChoice = false;
+	private       CLabel               lblSummary;
+	private       CLabel               lblLayerTime;
+	private       CLabel               lblLayerTimeLeft;
+	private       CLabel               lblMode;
+	private       CLabel               lblTotalLayers;
+	private       CLabel               lblTotalHeight;
+	private       CLabel               lblCurrentLayer;
+	private       CLabel               lblLayersLeft;
+	private       CLabel               lblLayerHeight;
+	private       CLabel               lblHeightLeft;
+	private       CLabel               lblProcessing;
+	private       CVBox                vboxHoldHotEnd;
+	private       CVBox                vboxBedTempAtLayer;
+	private       CVBox                vboxFadeBedTemp;
+	private       CVBox                sliderBox;
+	private       CVBox                boxButtons;
+	private       CHBox                boxSlider;
+	private       CTextField           tfHotEndHoldTemp;
+	private       CTextField           tfHotEndPrintTemp;
+	private       CTextField           tfBedHoldTemp;
+	private       CTextField           tfBedPrintTemp;
+	private       CTextField           tfBedTempAtLayer;
+	private       CTextField           tfLayerForNewBedTemp;
+	private       CTextField           tfFinalBedTempForFade;
+	private       CTextField           tfTimeForBedTempFade;
+	private       CCheckBox            cbHoldHotEnd;
+	private       CCheckBox            cbLayerBedTemp;
+	private       CCheckBox            cbFadeBedTemp;
+	private       CCheckBox            cbAddEndGCode;
+	private       CCheckBox            cbLoadBedMesh;
+	private       CCheckBox            cbHomeHotEnd;
+	private       CButton              btnProcess;
+	private       CButton              btnCancel;
+	private       CButton              btnZHop;
+	private       CButton              btnAddEndCode;
+	private       Slider               slider;
+	private       CChoiceBox<Filament> cbFilament;
+
+	private void disableControls() {
+		Platform.runLater(() -> {
+			tfHotEndHoldTemp.setDisable(true);
+			tfHotEndPrintTemp.setDisable(true);
+			tfBedHoldTemp.setDisable(true);
+			tfBedPrintTemp.setDisable(true);
+			tfBedTempAtLayer.setDisable(true);
+			tfLayerForNewBedTemp.setDisable(true);
+			tfFinalBedTempForFade.setDisable(true);
+			tfTimeForBedTempFade.setDisable(true);
+			cbHoldHotEnd.setDisable(true);
+			cbLayerBedTemp.setDisable(true);
+			cbFadeBedTemp.setDisable(true);
+			cbAddEndGCode.setDisable(true);
+			cbLoadBedMesh.setDisable(true);
+			cbHomeHotEnd.setDisable(true);
+			btnProcess.setDisable(true);
+			btnCancel.setDisable(true);
+			btnZHop.setDisable(true);
+			btnAddEndCode.setDisable(true);
+			slider.setDisable(true);
+			cbFilament.setDisable(true);
+		});
+	}
+
+	private void enableControls() {
+		Platform.runLater(() -> {
+			tfHotEndHoldTemp.setDisable(false);
+			tfHotEndPrintTemp.setDisable(false);
+			tfBedHoldTemp.setDisable(false);
+			tfBedPrintTemp.setDisable(false);
+			tfBedTempAtLayer.setDisable(false);
+			tfLayerForNewBedTemp.setDisable(false);
+			tfFinalBedTempForFade.setDisable(false);
+			tfTimeForBedTempFade.setDisable(false);
+			cbHoldHotEnd.setDisable(false);
+			cbLayerBedTemp.setDisable(false);
+			cbFadeBedTemp.setDisable(false);
+			cbAddEndGCode.setDisable(false);
+			cbLoadBedMesh.setDisable(false);
+			cbHomeHotEnd.setDisable(false);
+			btnProcess.setDisable(false);
+			btnCancel.setDisable(false);
+			btnZHop.setDisable(false);
+			btnAddEndCode.setDisable(false);
+			slider.setDisable(false);
+			cbFilament.setDisable(false);
+		});
+	}
 
 	private void setHeight() {
 		if (SceneOne.sceneExists(sceneId)) {SceneOne.setHeight(sceneId, height);}
@@ -145,8 +213,8 @@ public class GUI {
 	private CHBox getEndGCode() {
 		CLabel lblAddEndGCode = new CLabel.Builder("Add Ending GCode").build();
 		cbAddEndGCode = new CCheckBox.Builder().selected(AppSettings.get().addEndGCode()).build();
-		CButton btnAddEndCode = new CButton.Builder().text("GCode").width(65).visible(cbAddEndGCode.isSelected()).build();
-		CHBox  boxCheckEnd   = new CHBox.Builder(15, lblAddEndGCode, cbAddEndGCode, btnAddEndCode).padding(10, 0, 0, 0).build();
+		btnAddEndCode = new CButton.Builder().text("GCode").width(65).visible(cbAddEndGCode.isSelected()).build();
+		CHBox boxCheckEnd = new CHBox.Builder(15, lblAddEndGCode, cbAddEndGCode, btnAddEndCode).padding(10, 0, 0, 0).build();
 		cbAddEndGCode.selectedProperty().addListener((observable, oldValue, newValue) -> {
 			btnAddEndCode.setVisible(newValue);
 			AppSettings.set().addEndGCode(newValue);
@@ -173,32 +241,32 @@ public class GUI {
 			String value = newValue.replaceAll("[^0-9]+", "");
 			tfHotEndHoldTemp.setText(value);
 			switch (filament) {
-				case PLA -> AppSettings.set().hotEndHoldTempPLA(Integer.parseInt(newValue));
-				case ABS -> AppSettings.set().hotEndHoldTempABS(Integer.parseInt(newValue));
+				case PLA -> AppSettings.set().hotEndHoldTempPLA(Integer.parseInt(newValue.replaceAll("[^0-9]+", "")));
+				case ABS -> AppSettings.set().hotEndHoldTempABS(Integer.parseInt(newValue.replaceAll("[^0-9]+", "")));
 			}
 		});
 		tfHotEndPrintTemp.textProperty().addListener((observable, oldValue, newValue) -> {
 			String value = newValue.replaceAll("[^0-9]+", "");
 			tfHotEndPrintTemp.setText(value);
 			switch (filament) {
-				case PLA -> AppSettings.set().hotEndPrintTempPLA(Integer.parseInt(newValue));
-				case ABS -> AppSettings.set().hotEndPrintTempABS(Integer.parseInt(newValue));
+				case PLA -> AppSettings.set().hotEndPrintTempPLA(Integer.parseInt(newValue.replaceAll("[^0-9]+", "")));
+				case ABS -> AppSettings.set().hotEndPrintTempABS(Integer.parseInt(newValue.replaceAll("[^0-9]+", "")));
 			}
 		});
 		tfBedHoldTemp.textProperty().addListener((observable, oldValue, newValue) -> {
 			String value = newValue.replaceAll("[^0-9]+", "");
 			tfBedHoldTemp.setText(value);
 			switch (filament) {
-				case PLA -> AppSettings.set().bedHoldTempPLA(Integer.parseInt(newValue));
-				case ABS -> AppSettings.set().bedHoldTempABS(Integer.parseInt(newValue));
+				case PLA -> AppSettings.set().bedHoldTempPLA(Integer.parseInt(newValue.replaceAll("[^0-9]+", "")));
+				case ABS -> AppSettings.set().bedHoldTempABS(Integer.parseInt(newValue.replaceAll("[^0-9]+", "")));
 			}
 		});
 		tfBedPrintTemp.textProperty().addListener((observable, oldValue, newValue) -> {
 			String value = newValue.replaceAll("[^0-9]+", "");
 			tfBedPrintTemp.setText(value);
 			switch (filament) {
-				case PLA -> AppSettings.set().bedPrintTempPLA(Integer.parseInt(newValue));
-				case ABS -> AppSettings.set().bedPrintTempABS(Integer.parseInt(newValue));
+				case PLA -> AppSettings.set().bedPrintTempPLA(Integer.parseInt(newValue.replaceAll("[^0-9]+", "")));
+				case ABS -> AppSettings.set().bedPrintTempABS(Integer.parseInt(newValue.replaceAll("[^0-9]+", "")));
 			}
 		});
 		CHBox boxCheck      = new CHBox.Builder(15, cbHoldHotEnd, lblHoldHotEnd).build();
@@ -238,16 +306,16 @@ public class GUI {
 			String value = newValue.replaceAll("[^0-9]+", "");
 			tfBedTempAtLayer.setText(value);
 			switch (filament) {
-				case PLA -> AppSettings.set().bedTempAtLayerPLA(Integer.parseInt(newValue));
-				case ABS -> AppSettings.set().hotEndHoldTempABS(Integer.parseInt(newValue));
+				case PLA -> AppSettings.set().bedTempAtLayerPLA(Integer.parseInt(newValue.replaceAll("[^0-9]+", "")));
+				case ABS -> AppSettings.set().hotEndHoldTempABS(Integer.parseInt(newValue.replaceAll("[^0-9]+", "")));
 			}
 		});
 		tfLayerForNewBedTemp.textProperty().addListener((observable, oldValue, newValue) -> {
 			String value = newValue.replaceAll("[^0-9]+", "");
 			tfLayerForNewBedTemp.setText(value);
 			switch (filament) {
-				case PLA -> AppSettings.set().layerForNewBedTempPLA(Integer.parseInt(newValue));
-				case ABS -> AppSettings.set().layerForNewBedTempABS(Integer.parseInt(newValue));
+				case PLA -> AppSettings.set().layerForNewBedTempPLA(Integer.parseInt(newValue.replaceAll("[^0-9]+", "")));
+				case ABS -> AppSettings.set().layerForNewBedTempABS(Integer.parseInt(newValue.replaceAll("[^0-9]+", "")));
 			}
 		});
 		CHBox boxCheck      = new CHBox.Builder(15, cbLayerBedTemp, lblLayerBedTemp).build();
@@ -286,13 +354,13 @@ public class GUI {
 		tfFinalBedTempForFade.textProperty().addListener((observable, oldValue, newValue) -> {
 			String value = newValue.replaceAll("[^0-9]+", "");
 			tfFinalBedTempForFade.setText(value);
-			AppSettings.set().finalBedTempForFade(filament, Integer.parseInt(newValue));
+			AppSettings.set().finalBedTempForFade(filament, Integer.parseInt(newValue.replaceAll("[^0-9]+", "")));
 
 		});
 		tfTimeForBedTempFade.textProperty().addListener((observable, oldValue, newValue) -> {
 			String value = newValue.replaceAll("[^0-9]+", "");
 			tfTimeForBedTempFade.setText(value);
-			AppSettings.set().timeForBedTempFade(filament, Integer.parseInt(newValue));
+			AppSettings.set().timeForBedTempFade(filament, Integer.parseInt(newValue.replaceAll("[^0-9]+", "")));
 		});
 		CHBox boxCheck      = new CHBox.Builder(15, cbFadeBedTemp, lblFadeBedTemp).build();
 		CHBox boxLabels     = new CHBox.Builder(15, lblFinalBedTempForFade, lblTimeForBedTempFade).visible(cbFadeBedTemp.isSelected()).padding(0, 0, 0, 35).build();
@@ -334,14 +402,14 @@ public class GUI {
 	private void makeControls() {
 		lblSummary = new CLabel.Builder().width(width * .9).alignment(Pos.CENTER).font(Font.font("Arial")).build();
 		lblMode    = new CLabel.Builder().width(width * .8).build();
-		CLabel               lblFilament = new CLabel.Builder("Filament").build();
-		CChoiceBox<Filament> cbFilament  = new CChoiceBox.Builder<Filament>().width(65).item(Filament.ABS).item(PLA).build();
-		CButton               btnZHop     = new CButton.Builder().text("Add ZHop").width(90).build();
+		CLabel lblFilament = new CLabel.Builder("Filament").build();
+		cbFilament = new CChoiceBox.Builder<Filament>().width(65).item(Filament.ABS).item(PLA).build();
+		btnZHop    = new CButton.Builder().text("Add ZHop").width(90).build();
 
-		CLabel    lblHomeHotEnd = new CLabel.Builder("Home Hot End Before Print").build();
-		CCheckBox cbHomeHotEnd  = new CCheckBox.Builder().build();
-		CButton    btnProcess    = new CButton.Builder("Process GCode").disabled(AppSettings.gcodePathNull()).width(125).build();
-		CButton    btnCancel     = new CButton.Builder("Cancel").onAction(e -> cancel()).width(60).build();
+		CLabel lblHomeHotEnd = new CLabel.Builder("Home Hot End Before Print").build();
+		cbHomeHotEnd     = new CCheckBox.Builder().build();
+		btnProcess       = new CButton.Builder("Process GCode").disabled(AppSettings.gcodePathNull()).width(125).build();
+		btnCancel        = new CButton.Builder("Cancel").onAction(e -> cancel()).width(60).build();
 		lblTotalLayers   = new CLabel.Builder("Layers:").size(115, 15).alignment(Pos.CENTER_LEFT).font(Font.font("Monaco", 10)).build();
 		lblTotalHeight   = new CLabel.Builder("Height:").size(115, 15).alignment(Pos.CENTER_LEFT).font(Font.font("Monaco", 10)).build();
 		lblCurrentLayer  = new CLabel.Builder("Layer:").size(95, 15).alignment(Pos.CENTER_LEFT).font(Font.font("Monaco", 10)).build();
@@ -401,63 +469,67 @@ public class GUI {
 		});
 		cbFilament.setValue(filament);
 		cbFilament.setDisable(lockFilamentChoice);
-		btnProcess.setOnAction(e -> {
-			boolean homeHotEnd           = cbHomeHotEnd.isSelected();
-			boolean addEndGCode          = cbAddEndGCode.isSelected();
-			boolean holdHotEnd           = cbHoldHotEnd.isSelected();
-			boolean loadBedMesh          = cbLoadBedMesh.isSelected();
-			int     hotEndHoldTemp       = Integer.parseInt(tfHotEndHoldTemp.getText());
-			int     hotEndPrintTemp      = Integer.parseInt(tfHotEndPrintTemp.getText());
-			int     bedHoldTemp          = Integer.parseInt(tfBedHoldTemp.getText());
-			int     bedPrintTemp         = Integer.parseInt(tfBedPrintTemp.getText());
-			boolean changeTempAtLayer    = cbLayerBedTemp.isSelected();
-			int     bedAtLayerTemp       = Integer.parseInt(tfBedTempAtLayer.getText());
-			int     layerToChangeBedTemp = Integer.parseInt(tfLayerForNewBedTemp.getText());
-			boolean fadeBedTemp          = cbFadeBedTemp.isSelected();
-			int     finalFadeTemp        = Integer.parseInt(tfFinalBedTempForFade.getText());
-			int     fadeTime             = Integer.parseInt(tfTimeForBedTempFade.getText());
+		btnProcess.setOnAction(e -> processGCode());
+	}
 
-			UserChoices userChoices = new UserChoices(
-					homeHotEnd,
-					addEndGCode,
-					holdHotEnd,
-					loadBedMesh,
-					hotEndHoldTemp,
-					hotEndPrintTemp,
-					bedHoldTemp,
-					bedPrintTemp,
-					changeTempAtLayer,
-					bedAtLayerTemp,
-					layerToChangeBedTemp,
-					fadeBedTemp,
-					finalFadeTemp,
-					fadeTime);
-			new Thread(() -> {
-				Platform.runLater(() -> {
-					btnProcess.setDisable(true);
-					btnCancel.setDisable(true);
-					lblProcessing.setText("Processing GCode - could take a little time");
-				});
-				GCode.startProcessing(userChoices);
-			}).start();
-			new Timer().scheduleAtFixedRate(new TimerTask() {
-				@Override public void run() {
-					String process = Tracking.getProcess();
-					if (process != null) {
-						if (!process.isEmpty()) {
-							Platform.runLater(() -> lblProcessing.setText(process));
-						}
+	private void processGCode() {
+		disableControls();
+		lblProcessing.setText("Processing GCode - could take a little time");
+		boolean homeHotEnd           = cbHomeHotEnd.isSelected();
+		boolean addEndGCode          = cbAddEndGCode.isSelected();
+		boolean holdHotEnd           = cbHoldHotEnd.isSelected();
+		boolean loadBedMesh          = cbLoadBedMesh.isSelected();
+		int     hotEndHoldTemp       = Integer.parseInt(tfHotEndHoldTemp.getText());
+		int     hotEndPrintTemp      = Integer.parseInt(tfHotEndPrintTemp.getText());
+		int     bedHoldTemp          = Integer.parseInt(tfBedHoldTemp.getText());
+		int     bedPrintTemp         = Integer.parseInt(tfBedPrintTemp.getText());
+		boolean changeTempAtLayer    = cbLayerBedTemp.isSelected();
+		int     bedAtLayerTemp       = Integer.parseInt(tfBedTempAtLayer.getText());
+		int     layerToChangeBedTemp = Integer.parseInt(tfLayerForNewBedTemp.getText());
+		boolean fadeBedTemp          = cbFadeBedTemp.isSelected();
+		int     finalFadeTemp        = Integer.parseInt(tfFinalBedTempForFade.getText());
+		int     fadeTime             = Integer.parseInt(tfTimeForBedTempFade.getText());
+
+		UserChoices userChoices = new UserChoices(
+				homeHotEnd,
+				addEndGCode,
+				holdHotEnd,
+				loadBedMesh,
+				hotEndHoldTemp,
+				hotEndPrintTemp,
+				bedHoldTemp,
+				bedPrintTemp,
+				changeTempAtLayer,
+				bedAtLayerTemp,
+				layerToChangeBedTemp,
+				fadeBedTemp,
+				finalFadeTemp,
+				fadeTime);
+
+		new Thread(() -> GCode.startProcessing(userChoices)).start();
+
+		new Timer().scheduleAtFixedRate(new TimerTask() {
+			@Override public void run() {
+				String process = Tracking.getProcess();
+				if (process != null) {
+					if (!process.isEmpty()) {
+						Platform.runLater(() -> lblProcessing.setText(process));
 					}
 				}
-			}, 2000, 100);
-		});
+			}
+		}, 2000, 100);
+
 	}
 
 	private Slider getSlider() {
-		Slider slider = new Slider();
+		slider = new Slider();
 		slider.setMinWidth(width * .9);
 		slider.setMaxWidth(width * .9);
 		slider.setPrefWidth(width * .9);
+		return slider;
+	}
+
+	private void setSlider() {
 		slider.setMin(0.0);
 		slider.setMax(time.getLayerCount());
 		int    totalLayers = time.getLayerCount();
@@ -486,7 +558,6 @@ public class GUI {
 			lblLayerTime.setText("Time   (hh:mm): " + pad(hourIn) + ":" + pad(minuteIn));
 			lblLayerTimeLeft.setText("Remain (hh:mm): " + pad(hourOut) + ":" + pad(minuteOut) + " (minutes: " + totalMinutesOut + ")");
 		});
-		return slider;
 	}
 
 	private void updateSummary() {
@@ -494,7 +565,7 @@ public class GUI {
 		lblMode.setText(AppSettings.gcodePathNull() ? "No GCode Processing (Test Mode)" : "Live - GCode will be processed (" + filename + ")");
 		lblMode.setStyle(AppSettings.gcodePathNull() ? "-fx-text-fill:RED" : "-fx-text-fill:GREEN");
 		int printTime = time.getTotalPrintTime();
-		int hours = printTime / 60 / 60;
+		int hours     = printTime / 60 / 60;
 		printTime -= (hours * 60 * 60);
 		int minutes = printTime / 60;
 		lblSummary.setText("Print Time (hh:mm): " + pad(hours) + ":" + pad(minutes) + " / Layers: " + GCode.getLastLayerNumber() + " / Height: " + padD(time.getTotalHeight()) + " mm");

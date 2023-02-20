@@ -14,7 +14,13 @@ import java.util.regex.Pattern;
 
 public class Time {
 
-	public Time() {
+	private static final Time INSTANCE = new Time();
+
+	public static Time getInstance() {
+		return INSTANCE;
+	}
+
+	private Time() {
 		logging = AppSettings.get().logging();
 		analyze();
 	}

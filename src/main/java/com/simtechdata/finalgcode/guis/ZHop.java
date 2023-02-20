@@ -218,8 +218,8 @@ public class ZHop {
 			return;
 		}
 
-		int start           = Integer.parseInt(startString);
-		int end             = endString.isEmpty() ? GCode.getLastLayerNumber() : Integer.parseInt(endString);
+		int start           = Integer.parseInt(startString.replaceAll("[^0-9]+",""));
+		int end             = endString.isEmpty() ? GCode.getLastLayerNumber() : Integer.parseInt(endString.replaceAll("[^0-9]+",""));
 		int lastLayerNumber = GCode.getLastLayerNumber();
 		if ((end - start) < 0) {
 			SceneOne.showMessage(300, 125, "End layer cannot be lower than start layer");
