@@ -25,11 +25,11 @@ Final GCode is a program that I wrote for doing some gcode modifications that I 
   - Remaining model height left to print from that layer
   - This tool gives you info that can help you figure out where you want to set the other settings.
 
-The program is intended to be used as the Prusa Slicer finishing gcode processor, by adding it to your Prusa settings. However, you can also use it manually by executing the program and passing into the executable, the full path to your gcode file as an argument.
+The program is intended to be used as the Prusa / Super Slicer finishing gcode processor, by adding it to the Post G-Code processing setting. However, you can also use it manually by executing the program and passing into the executable, the full path to your gcode file as an argument.
 
 
 ### Time Calculations
-For some reason, the way that time is calculated from gcode doesn't seem to work properly with Cura sliced gcode. I'm working on this ... but if you slice with Prusa, the time calculation should be accurate.
+For some reason, the way that time is calculated from gcode doesn't seem to work properly with Cura sliced gcode. I'm working on this ... but if you slice with Prusa / Super, the time calculation should be accurate.
 
 ## Using Final GCode
 
@@ -49,10 +49,10 @@ If you want the program to include the height of the model, your slicer should h
 
 If you open a gcode file and it says there are 0 layers and the slider bar has no slider control on it, then your gcode doesn't have the layer markers in it.
 
-#### Prusa Slicer Final GCode Processing
-In order to use this program as the post processing software in PrusaSlicer, there are some settings you will need to make in Prusa. 
+#### Prusa / Super Slicer Final GCode Processing
+In order to use this program as the post processing software in Prusa / Super Slicer, there are some settings you will need to change. 
 
-If you're using Windows, skip ahead a little to Prusa For Windows.
+If you're using Windows, skip ahead a little to Prusa / Super Slicer for Windows.
 
 ## Prusa / Super Slicer for MacOS
 After installing the program, you will need to create a small bash shell script that will have two lines in it. Here is an example that should help you figure out what your script needs to look like:
@@ -66,16 +66,16 @@ Save this using any filename you want as long as its extension is `.sh` for exam
 chmod +x PrusaPostProcessing.sh
 ```
 
-Then within Prusa, you need to go into `Print Settings` / `Output Options` `Post processing scripts` and put in the full path to that `.sh` file
+Then within Slicer, you need to go into `Print Settings` / `Output Options` `Post processing scripts` and put in the full path to that `.sh` file
 
 ```bash
 /Users/username/PrusaPostProcessing.sh
 ```
 ---
 ## Prusa / Super Slicer For Windows
-To set up the program to automatically receive any gcode from Prusa in Windows, you will first need to know what the path is to the .exe. This is normally `C:\Program Files\FinalGCode\FinalGCode.exe`
+To set up the program to automatically receive any gcode from Prusa / Super Slicer in Windows, you will first need to know what the path is to the .exe. This is normally `C:\Program Files\FinalGCode\FinalGCode.exe`
 
-Open PrusaSlicer and go into `Print Settings` / `Output Options` `Post processing scripts` and put in the full path to the .exe file surrounded by quotes (quotes are necessary if there is a space character in the path).
+Open Slicer and go into `Print Settings` / `Output Options` `Post processing scripts` and put in the full path to the .exe file surrounded by quotes (quotes are necessary if there is a space character in the path).
 
 ```agsl
 "C:\Program Files\FinalGCode\FinalGCode.exe"
@@ -83,16 +83,16 @@ Open PrusaSlicer and go into `Print Settings` / `Output Options` `Post processin
 ---
 
 
-And thats it! Now, when you export your gcode from within Prusa, it will send the gcode to this program and the window will pop up where you can make your changes and then save the final gcode.
+And thats it! Now, when you export your gcode from within Prusa / Super Slicer, it will send the gcode to this program and the window will pop up where you can make your changes and then save the final gcode.
 
-If you use Prusa to upload your gcode to Octo Print, it will use the modified gcode to send to the server.
+If you use Slicer to upload your gcode to Octo Print, it will use the modified gcode to send to the server.
 
 ## Main Window
 ![Main Screen](./img/main.png)
 
 Everything is optional and the different options are enabled by selecting that options check box.
 
-Filament is essentially a `Settings` option. The program stores the values that you enter in all of the fields so that they persist between reloads, **except for zHop settings**. When you use the program from Prusa Slicer, Prusa sends the program various information, including which filament is being used for the print. At the moment, I only have it set up to detect PLA or ABS since those are what I use the most, but I will be adding the ability for it to detect any filament that is sent to it, at which point it will use whatever is sent as an additional settings slot so that your values for any filament persist between reloads.
+Filament is essentially a `Settings` option. The program stores the values that you enter in all of the fields so that they persist between reloads, **except for zHop settings**. When you use the program from Prusa / Super Slicer, it sends the program various information, including which filament is being used for the print. At the moment, I only have it set up to detect PLA or ABS since those are what I use the most, but I will be adding the ability for it to detect any filament that is sent to it, at which point it will use whatever is sent as an additional settings slot so that your values for any filament persist between reloads.
 
 It made the most sense to me that things like hot end temp and bed temp would be different based on what filament is being used so then using the filament title as a settings slot seemed logical.
 
@@ -141,11 +141,11 @@ Implementing this in code is lot more rule intensive, but that is the net result
 
 ## Processing GCode
 
-When you click on the Process GCode button, it will save the final gcode in the same folder that the source gcode file is in. Or if you're using this program with Prusa, it will get the path that you chose when you hit the Export GCode button. 
+When you click on the Process GCode button, it will save the final gcode in the same folder that the source gcode file is in. Or if you're using this program with Prusa / Super Slicer, it will get the path that you chose when you hit the Export GCode button. 
 
-It will ammend the word `_Final` to the end of the gcode filename before the `.gcode` extension.
+It will amend the word `_Final` to the end of the gcode filename before the `.gcode` extension.
 
-If you're using Prusa to upload the gcode directly to Octo Print or Klipper etc., the uploaded gcode will be the code that was modified by this program.
+If you're using Prusa / Super Slicer to upload the gcode directly to Octo Print or Klipper etc., the uploaded gcode will be the code that was modified by this program.
 
 ---
 ### Windows Users
